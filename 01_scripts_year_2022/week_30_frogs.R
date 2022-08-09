@@ -53,6 +53,15 @@ frog_observations <- frogs %>%
   janitor::adorn_totals() %>% 
   ungroup()
 
+frog_obs <- frogs %>% 
+  group_by(frog_id) %>% 
+  summarise(count = n()) %>% 
+  # Add Total row at the end
+  # janitor::adorn_totals() %>% 
+  arrange(desc(count)) %>% 
+  mutate(frog_id = as_factor(frog_id)) %>% 
+  ungroup()
+
 frogs %>% 
   select(month,HabType)
 
@@ -79,7 +88,7 @@ tbl_HabType_Str <- table(frogs$HabType,
   purrr::map_df(., janitor::adorn_totals)
 
 bg <- "#2C2818"
- # Plot 
+ # Plot ----
 frogs %>% 
   group_by(HabType,month) %>% 
   summarise(count = n(),.groups = "keep") %>% 
@@ -100,3 +109,32 @@ frogs %>%
     caption = "#TidyTuesday | Week 31 | August 2, 2022 \n Data: USGS | doi.org/10.5066/P9DACPCV")
 
 sessionInfo()
+
+# Plot 2 ----
+
+frogs %>% 
+  mutate(frog_id = as_factor(frog_id)) %>% 
+  ggplot(aes(x = SurveyDate,y = frog_id)) + 
+  geom_point(aes(color = HabType)) + 
+  theme_tq() + 
+  scale_color_tq()+ 
+  labs(
+    title = "Movement of Oregon spotted frogs",
+    subtitle = "Using radio-telemetry, the U.S. Geological Survey monitored Oregon spotted frogs \nMissing September observations could have lost the movement patterns",
+    y = "Frog ID : frequency",
+    x = "Observation Date",
+    caption = "#TidyTuesday | Week 31 | August 2, 2022 \n Data: USGS | doi.org/10.5066/P9DACPCV")
+
+
+frogs %>% 
+  mutate(frog_id = factor(frog_id,levels = frog_obs$frog_id) %>% fct_rev()) %>% 
+  ggplot(aes(x = SurveyDate,y = frog_id)) + 
+  geom_point(aes(color = HabType))+ 
+  theme_tq() + 
+  scale_color_tq()+ 
+  labs(
+    title = "Movement of Oregon spotted frogs",
+    subtitle = "Using radio-telemetry, the U.S. Geological Survey monitored Oregon spotted frogs \nMissing September observations could have lost the movement patterns",
+    y = "Frog ID : frequency",
+    x = "Observation Date",
+    caption = "#TidyTuesday | Week 31 | August 2, 2022 \n Data: USGS | doi.org/10.5066/P9DACPCV")
