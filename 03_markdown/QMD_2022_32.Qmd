@@ -1,8 +1,8 @@
 ---
 title: "Tidy Tuesday Week 32"
 author: "Insights & Analytics"
-format: markdown_github
-# format: html
+format: html
+keep-md: true
 editor: source
 ---
 
