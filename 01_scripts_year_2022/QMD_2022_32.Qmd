@@ -1,0 +1,92 @@
+---
+title: "Tidy Tuesday Week 32"
+author: "Insights & Analytics"
+format: html
+editor: source
+---
+
+## Ferris Wheels 
+The goal of ferriswheels is to provide a fun harmless little data set to play with
+
+## Libaries
+
+We will be using `Tidyverse`, `DataExplorer` and `TidyQuant`
+
+```{r}
+#| echo: false
+#| warning: false
+library(tidyverse)
+library(DataExplorer)
+library(lubridate)
+library(tidyquant)
+library(gt)
+library(gtExtras)
+```
+
+## Data Analysis
+
+```{r}
+#| echo: false
+wheels <- read_rds("../00_data/2022/week-32_wheels.rds")
+
+wheels %>% glimpse()
+```
+
+Plot the missing values in each variable(column) of the dataset
+```{r}
+#| echo: false
+#| label: missing-value in each column
+#| fig-cap: Percentage of missing values in each column
+plot_missing(wheels)
+```
+
+Delete Columns with majority of missing data and select initial columns for initial analysis 
+```{r}
+#| echo: false
+wheels_tbl <- wheels %>% select(-c("closed","vip_area","turns","diameter","design_manufacturer")) %>%
+  select(name,country, height,opened,status) %>% 
+  mutate(country = as.factor(country))
+
+wheels_tbl
+```
+
+## Plots 
+### Plot by Height 
+```{r}
+#| echo: false
+#| label: fig- Wheels by Height
+#| fig-cap: 20 Tallest Ferris Wheels
+#| fig-height: 8
+wheels_tbl %>%
+  arrange(desc(height)) %>% mutate(name = as_factor(name) %>% fct_rev()) %>% 
+  slice(1:20) %>% 
+  mutate(lab_1 = str_glue("{name}, {country},{year(opened)}")) %>% 
+  ggplot(aes(name,height)) + 
+  geom_col(fill = "#2c3e50") + 
+  coord_flip()+ 
+  geom_label(mapping = aes(label = lab_1),hjust = 1)  + theme_tq() +
+  theme(axis.title.y =element_blank(),
+        axis.text.y  =element_blank(),
+        axis.ticks.y =element_blank()) + 
+  labs(
+    title = "Top 20 Ferris Wheels, by Height",
+    caption = "Data : Tidy Tuesday \n @Emil_Hvitfeldt"
+  )
+```
+### Summary Table, Country
+```{r}
+#| echo: false
+#| label: table Summary
+wheels_tbl %>% 
+  group_by(country) %>% 
+  summarise(count = n(),
+            height  = list(height)) %>% 
+  arrange(desc(count)) %>% gt() %>% 
+  gtExtras::gt_plt_dist(column = "height",type = "histogram", fill_color = "red") %>% 
+  gt_theme_nytimes() %>%
+  tab_header(
+    title = "Ferris Wheels Summary, by Country",
+    subtitle = "Tidy Tuesday, Week 32"
+  )
+```
+
